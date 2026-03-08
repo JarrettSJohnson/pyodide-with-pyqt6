@@ -1,0 +1,14 @@
+--- a/sip/QtCore/qprocess.sip
++++ b/sip/QtCore/qprocess.sip
+@@ -305,8 +305,10 @@ bool operator!=(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs);
+ };
+
+ %End
++%If (PyQt_Process)
+ %If (Qt_6_8_0 -)
+ bool operator!=(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs);
+ %End
+ %If (Qt_6_8_0 -)
+ bool operator==(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs);
+ %End
++%End

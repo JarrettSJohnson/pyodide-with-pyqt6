@@ -1,0 +1,25 @@
+--- a/pyqtbuild/bindings.py
++++ b/pyqtbuild/bindings.py
+@@ -98,6 +98,20 @@ class PyQtBindings(Bindings):
+     def is_buildable(self):
+         """ Return True of the bindings are buildable. """
+
++        # WASM cross-compilation: skip config tests entirely and use
++        # hardcoded disabled features from PYQT_WASM_FEATURES env var.
++        # Format: "Module1=feat1,feat2;Module2=feat3"
++        wasm_features = os.environ.get('PYQT_WASM_FEATURES')
++        if wasm_features is not None:
++            self.project.progress(
++                    "WASM cross-build: skipping config test for {0}".format(
++                            self.name))
++            features_map = {}
++            for entry in wasm_features.split(';'):
++                if '=' in entry:
++                    mod, feats = entry.split('=', 1)
++                    features_map[mod] = feats.split(',') if feats else []
++            test_output = features_map.get(self.name, [])
++            return self.handle_test_output(test_output)
++
+         project = self.project
+
+         test = 'cfgtest_' + self.name

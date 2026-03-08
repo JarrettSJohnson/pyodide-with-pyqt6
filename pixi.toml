@@ -1,0 +1,31 @@
+[project]
+name = "pyodide-qt"
+version = "0.1.0"
+description = "PyQt6 compiled for Pyodide via Emscripten"
+channels = ["conda-forge"]
+platforms = ["osx-arm64", "linux-64"]
+
+[dependencies]
+python = ">=3.12,<3.14"
+pyodide-build = ">=0.33.0"
+cmake = ">=3.28"
+ninja = ">=1.11"
+perl = ">=5.32"              # needed by Qt's init-repository
+git = ">=2.40"
+pkg-config = ">=0.29"
+make = ">=4.3"
+qt6-main = "6.10.2.*"          # host Qt6 (moc, rcc, uic) for cross-compilation
+pip = ">=24.0"                 # needed by pyodide-build xbuildenv
+wget = ">=1.25.0,<2"
+autoconf = ">=2.72,<3"
+automake = ">=1.17,<2"
+libtool = ">=2.5.4,<3"
+sed = ">=4.9,<5"
+
+[tasks]
+build = { cmd = "bash build.sh", description = "Full build pipeline" }
+build-qt = { cmd = "bash build.sh qt", description = "Build Qt6 for WASM only" }
+build-pyqt = { cmd = "bash build.sh pyqt", description = "Build SIP + PyQt6 only" }
+build-pyodide = { cmd = "bash build.sh pyodide", description = "Link into Pyodide only" }
+clean = { cmd = "bash build.sh clean", description = "Remove build artifacts" }
+serve = { cmd = "python -m http.server -d build/output 8080", description = "Serve the built output" }

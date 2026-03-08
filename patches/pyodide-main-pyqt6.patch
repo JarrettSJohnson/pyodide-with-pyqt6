@@ -1,0 +1,58 @@
+--- a/src/core/main.c
++++ b/src/core/main.c
+@@ -4,6 +4,42 @@
+ #include <jslib.h>
+ #include <stdbool.h>
+
++/* PyQt6 static module init functions */
++extern PyObject *PyInit_QtCore();
++extern PyObject *PyInit_QtGui();
++extern PyObject *PyInit_QtWidgets();
++extern PyObject *PyInit_QtSvg();
++extern PyObject *PyInit_QtSvgWidgets();
++extern PyObject *PyInit_QtXml();
++extern PyObject *PyInit_sip();
++
++/* PyQt6 namespace package wrapper */
++static PyMethodDef PyQt6Methods[] = {
++    {NULL, NULL, 0, NULL}
++};
++
++static struct PyModuleDef PyQt6ModuleDef = {
++    PyModuleDef_HEAD_INIT,
++    "PyQt6",
++    NULL,
++    -1,
++    PyQt6Methods
++};
++
++PyMODINIT_FUNC PyInit_PyQt6(void)
++{
++    PyObject *mod = PyModule_Create(&PyQt6ModuleDef);
++    PyModule_AddObject(mod, "__path__", Py_BuildValue("()"));
++    return mod;
++}
++
++static void register_pyqt6_modules(void)
++{
++    PyImport_AppendInittab("PyQt6", PyInit_PyQt6);
++    PyImport_AppendInittab("PyQt6.sip", PyInit_sip);
++    PyImport_AppendInittab("PyQt6.QtCore", PyInit_QtCore);
++    PyImport_AppendInittab("PyQt6.QtGui", PyInit_QtGui);
++    PyImport_AppendInittab("PyQt6.QtWidgets", PyInit_QtWidgets);
++    PyImport_AppendInittab("PyQt6.QtSvg", PyInit_QtSvg);
++    PyImport_AppendInittab("PyQt6.QtSvgWidgets", PyInit_QtSvgWidgets);
++    PyImport_AppendInittab("PyQt6.QtXml", PyInit_QtXml);
++}
++
+ #define FAIL_IF_STATUS_EXCEPTION(status)                                       \
+   if (PyStatus_Exception(status)) {                                            \
+     goto finally;                                                              \
+@@ -61,6 +97,7 @@ int
+ main(int argc, char** argv)
+ {
+   PyImport_AppendInittab("_pyodide_core", PyInit__pyodide_core);
++  register_pyqt6_modules();
+   initialize_python(argc, argv);
+   // Normally the runtime would exit when main() returns, don't let that
+   // happen.

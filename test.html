@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>PyQt6 on Pyodide</title>
+  <style>
+    body { font-family: monospace; margin: 20px; }
+    #log { white-space: pre-wrap; background: #111; color: #0f0; padding: 10px; height: 200px; overflow-y: auto; }
+    #qt-container { border: 1px solid #ccc; margin-top: 10px; width: 800px; height: 600px; }
+  </style>
+</head>
+<body>
+  <h2>PyQt6 on Pyodide Test</h2>
+  <div id="log">Loading...</div>
+  <div id="qt-container"></div>
+
+  <script type="module">
+    import { loadPyodide } from "./build/sources/pyodide/dist/pyodide.mjs";
+
+    const log = document.getElementById("log");
+    function print(msg) {
+      log.textContent += msg + "\n";
+      log.scrollTop = log.scrollHeight;
+      console.log(msg);
+    }
+
+    async function main() {
+      print("Loading Pyodide...");
+      const pyodide = await loadPyodide({
+        indexURL: "./build/sources/pyodide/dist/",
+        stdout: print,
+        stderr: print,
+      });
+      print("Pyodide loaded!");
+
+      // Set Qt container elements on the Emscripten module
+      // Qt 6 WASM looks for this to know where to render
+      const qtContainer = document.getElementById("qt-container");
+      pyodide._module.qtContainerElements = [qtContainer];
+
+      print("Importing PyQt6...");
+      pyodide.runPython(`
+import sys
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QApplication, QLabel, QVBoxLayout, QWidget, QPushButton
+
+print("Creating QApplication...")
+app = QApplication(sys.argv)
+
+print("Creating widgets...")
+window = QWidget()
+window.setWindowTitle("Hello from PyQt6 on Pyodide!")
+window.resize(400, 200)
+
+layout = QVBoxLayout()
+label = QLabel("Hello World from PyQt6!")
+label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+label.setStyleSheet("font-size: 24px; color: #2196F3; padding: 20px;")
+layout.addWidget(label)
+
+button = QPushButton("Click me!")
+button.setStyleSheet("font-size: 18px; padding: 10px;")
+layout.addWidget(button)
+
+window.setLayout(layout)
+window.show()
+
+print("Widgets created and shown!")
+print(f"Window size: {window.width()}x{window.height()}")
+      `);
+
+      print("Done! Check the container above.");
+    }
+
+    main().catch((e) => {
+      print("ERROR: " + (e.message || e));
+      console.error(e);
+    });
+  </script>
+</body>
+</html>
