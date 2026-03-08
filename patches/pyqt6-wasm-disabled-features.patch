@@ -1,9 +1,0 @@
-diff --git a/sip/QtCore/QtCoremod.sip b/sip/QtCore/QtCoremod.sip
---- a/sip/QtCore/QtCoremod.sip
-+++ b/sip/QtCore/QtCoremod.sip
-@@ -29,6 +29,8 @@
- %Feature PyQt_Accessibility
- %Feature PyQt_SessionManager
-+%Feature PyQt_Timezone
-+%Feature PyQt_SystemSemaphore
- %Feature PyQt_SSL

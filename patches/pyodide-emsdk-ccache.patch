@@ -1,0 +1,20 @@
+--- a/emsdk/Makefile	2026-03-07 19:54:06
++++ b/emsdk/Makefile	2026-03-07 19:54:06
+@@ -8,7 +8,6 @@
+ 	git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+ 	cd emsdk && ./emsdk install --build=Release $(PYODIDE_EMSCRIPTEN_VERSION)
+ 	cd emsdk/upstream/emscripten/ && cat ../../../patches/*.patch | patch -p1 --verbose
+-	cd emsdk && ./emsdk install --build=Release $(PYODIDE_EMSCRIPTEN_VERSION) ccache-git-emscripten-64bit
+ 	cd emsdk && ./emsdk activate --embedded --build=Release $(PYODIDE_EMSCRIPTEN_VERSION)
+ 
+ 	# Check that generated_struct_info is up to date.
+--- a/pyodide_env.sh	2026-03-07 19:54:06
++++ b/pyodide_env.sh	2026-03-07 19:54:06
+@@ -14,6 +14,6 @@
+ export EM_DIR
+ 
+ # Following two variables are set by emsdk activated otherwise
+-export _EMCC_CCACHE=1
++command -v ccache >/dev/null 2>&1 && export _EMCC_CCACHE=1
+ # mtime of this file is checked by ccache, we set it to avoid cache misses.
+ export EM_CONFIG="$ROOT/emsdk/emsdk/.emscripten"

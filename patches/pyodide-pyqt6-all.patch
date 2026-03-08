@@ -1,9 +1,9 @@
---- a/src/core/main.c
-+++ b/src/core/main.c
-@@ -4,6 +4,42 @@
+--- a/src/core/main.c	2026-03-07 19:54:00
++++ b/src/core/main.c	2026-03-07 19:54:06
+@@ -5,6 +5,48 @@
  #include <jslib.h>
  #include <stdbool.h>
-
+ 
 +/* PyQt6 static module init functions */
 +extern PyObject *PyInit_QtCore();
 +extern PyObject *PyInit_QtGui();
@@ -13,28 +13,29 @@
 +extern PyObject *PyInit_QtXml();
 +extern PyObject *PyInit_sip();
 +
-+/* PyQt6 namespace package wrapper */
-+static PyMethodDef PyQt6Methods[] = {
-+    {NULL, NULL, 0, NULL}
-+};
-+
-+static struct PyModuleDef PyQt6ModuleDef = {
++/* Create a namespace package for PyQt6 */
++static struct PyModuleDef pyqt6_module_def = {
 +    PyModuleDef_HEAD_INIT,
 +    "PyQt6",
 +    NULL,
 +    -1,
-+    PyQt6Methods
++    NULL
 +};
 +
-+PyMODINIT_FUNC PyInit_PyQt6(void)
-+{
-+    PyObject *mod = PyModule_Create(&PyQt6ModuleDef);
-+    PyModule_AddObject(mod, "__path__", Py_BuildValue("()"));
++static PyObject *PyInit_PyQt6(void) {
++    PyObject *mod = PyModule_Create(&pyqt6_module_def);
++    if (mod == NULL) return NULL;
++    /* Set __path__ to make it a package */
++    PyObject *path = PyList_New(0);
++    if (path == NULL) { Py_DECREF(mod); return NULL; }
++    PyObject_SetAttrString(mod, "__path__", path);
++    Py_DECREF(path);
++    /* Set __file__ so QtCore can find qt.conf location */
++    PyModule_AddStringConstant(mod, "__file__", "/lib/python3.13/PyQt6/__init__.py");
 +    return mod;
 +}
 +
-+static void register_pyqt6_modules(void)
-+{
++static void register_pyqt6_modules(void) {
 +    PyImport_AppendInittab("PyQt6", PyInit_PyQt6);
 +    PyImport_AppendInittab("PyQt6.sip", PyInit_sip);
 +    PyImport_AppendInittab("PyQt6.QtCore", PyInit_QtCore);
@@ -48,11 +49,26 @@
  #define FAIL_IF_STATUS_EXCEPTION(status)                                       \
    if (PyStatus_Exception(status)) {                                            \
      goto finally;                                                              \
-@@ -61,6 +97,7 @@ int
- main(int argc, char** argv)
- {
+@@ -64,6 +106,7 @@
+   // This exits and prints a message to stderr on failure,
+   // no status code to check.
    PyImport_AppendInittab("_pyodide_core", PyInit__pyodide_core);
 +  register_pyqt6_modules();
    initialize_python(argc, argv);
    // Normally the runtime would exit when main() returns, don't let that
    // happen.
+--- a/Makefile.envs	2026-03-07 19:54:00
++++ b/Makefile.envs	2026-03-07 19:54:06
+@@ -195,7 +195,11 @@
+ 	-lsdl.js \
+ 	--js-library=src/core/libjsverror.js \
+ 	-sMAX_WEBGL_VERSION=2  \
+-	-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0
++	-sGL_WORKAROUND_SAFARI_GETCONTEXT_BUG=0 \
++	--use-port=b/emdawnwebgpu_pkg/emdawnwebgpu.port.py \
++	-lembind \
++	\
++	$(shell grep -v '^\#' /Users/johnson/dev/pyodide-qt/build/pyqt6-ldflags.txt 2>/dev/null | grep -v '^$$' | tr '\n' ' ')
+ 
+ EXPORTS=_main \
+    ,_free \

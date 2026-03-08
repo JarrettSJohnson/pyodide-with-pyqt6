@@ -1,0 +1,568 @@
+--- a/sip/QtCore/QtCoremod.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/QtCoremod.sip	2026-03-07 19:53:59
+@@ -28,6 +28,9 @@
+ 
+ %Feature PyQt_Accessibility
+ %Feature PyQt_SessionManager
++%Feature PyQt_Timezone
++%Feature PyQt_SystemSemaphore
++%Feature PyQt_Thread
+ %Feature PyQt_SSL
+ %Feature PyQt_qreal_double
+ %Feature PyQt_PrintDialog
+@@ -144,7 +147,9 @@
+ %Include qmimedata.sip
+ %Include qmimedatabase.sip
+ %Include qmimetype.sip
++%If (PyQt_Thread)
+ %Include qmutex.sip
++%End
+ %Include qnumeric.sip
+ %Include qobject.sip
+ %Include qobjectcleanuphandler.sip
+@@ -159,16 +164,24 @@
+ %Include qprocess.sip
+ %Include qrandom.sip
+ %Include qrangemodel.sip
++%If (PyQt_Thread)
+ %Include qreadwritelock.sip
++%End
+ %Include qrect.sip
+ %Include qregularexpression.sip
+ %Include qresource.sip
++%If (PyQt_Thread)
+ %Include qrunnable.sip
++%End
+ %Include qsavefile.sip
++%If (PyQt_Thread)
+ %Include qsemaphore.sip
++%End
+ %Include qsequentialanimationgroup.sip
+ %Include qsettings.sip
++%If (PyQt_SystemSemaphore)
+ %Include qsharedmemory.sip
++%End
+ %Include qsignalmapper.sip
+ %Include qsize.sip
+ %Include qsocketnotifier.sip
+@@ -179,16 +192,27 @@
+ %Include qstringconverter.sip
+ %Include qstringlistmodel.sip
+ %Include qsysinfo.sip
++%If (PyQt_SystemSemaphore)
+ %Include qsystemsemaphore.sip
++%End
+ %Include qtemporarydir.sip
+ %Include qtemporaryfile.sip
+ %Include qtextboundaryfinder.sip
+ %Include qtextstream.sip
++%If (PyQt_Thread)
+ %Include qthread.sip
++%End
++%If (PyQt_Thread)
+ %Include qthreadpool.sip
++%End
+ %Include qtimeline.sip
+ %Include qtimer.sip
++%If (PyQt_Timezone)
+ %Include qtimezone.sip
++%End
++%If (!PyQt_Timezone)
++%Include qtimezone_stub.sip
++%End
+ %Include qtipccommon.sip
+ %Include qtranslator.sip
+ %Include qtransposeproxymodel.sip
+@@ -200,7 +224,9 @@
+ %Include qvariant.sip
+ %Include qvariantanimation.sip
+ %Include qversionnumber.sip
++%If (PyQt_Thread)
+ %Include qwaitcondition.sip
++%End
+ %Include qxmlstream.sip
+ %Include qyieldcpu.sip
+ %Include qanystringview.sip
+@@ -223,4 +249,6 @@
+ %Include qpycore_qmap.sip
+ %Include qbytearrayview.sip
+ %Include qpycore_qhash.sip
++%If (PyQt_Thread)
+ %Include qmutexlocker.sip
++%End
+--- a/sip/QtCore/qtimezone.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qtimezone.sip	2026-03-07 19:53:59
+@@ -27,13 +27,16 @@
+ %End
+ 
+ public:
++%If (PyQt_Timezone)
+     enum TimeType
+     {
+         StandardTime,
+         DaylightTime,
+         GenericTime,
+     };
++%End
+ 
++%If (PyQt_Timezone)
+     enum NameType
+     {
+         DefaultName,
+@@ -41,30 +44,47 @@
+         ShortName,
+         OffsetName,
+     };
++%End
+ 
++%If (PyQt_Timezone)
+     struct OffsetData
+     {
+ %TypeHeaderCode
+ #include <qtimezone.h>
+ %End
+ 
++%If (PyQt_Timezone)
+         QString abbreviation;
++%End
+         QDateTime atUtc;
++%If (PyQt_Timezone)
+         int offsetFromUtc;
++%End
++%If (PyQt_Timezone)
+         int standardTimeOffset;
++%End
++%If (PyQt_Timezone)
+         int daylightTimeOffset;
++%End
+     };
++%End
+ 
++%If (PyQt_Timezone)
+     typedef QList<QTimeZone::OffsetData> OffsetDataList;
++%End
+ %If (Qt_6_5_0 -)
+     QTimeZone(QTimeZone::Initialization spec);
+ %End
+ %If (Qt_6_2_0 -)
++%If (PyQt_Timezone)
+     QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name, const QString &abbreviation, QLocale::Territory territory = QLocale::AnyTerritory, const QString &comment = QString());
+ %End
++%End
+ %If (- Qt_6_2_0)
++%If (PyQt_Timezone)
+     QTimeZone(const QByteArray &zoneId, int offsetSeconds, const QString &name, const QString &abbreviation, QLocale::Country country = QLocale::AnyCountry, const QString &comment = QString());
+ %End
++%End
+     explicit QTimeZone(const QByteArray &ianaId);
+     explicit QTimeZone(int offsetSeconds);
+     QTimeZone(const QTimeZone &other);
+@@ -84,44 +104,94 @@
+     QLocale::Territory territory() const;
+ %End
+     QString comment() const;
++%If (PyQt_Timezone)
+     QString displayName(const QDateTime &atDateTime, QTimeZone::NameType nameType = QTimeZone::DefaultName, const QLocale &locale = QLocale()) const;
++%End
++%If (PyQt_Timezone)
+     QString displayName(QTimeZone::TimeType timeType, QTimeZone::NameType nameType = QTimeZone::DefaultName, const QLocale &locale = QLocale()) const;
++%End
++%If (PyQt_Timezone)
+     QString abbreviation(const QDateTime &atDateTime) const;
++%End
++%If (PyQt_Timezone)
+     int offsetFromUtc(const QDateTime &atDateTime) const;
++%End
++%If (PyQt_Timezone)
+     int standardTimeOffset(const QDateTime &atDateTime) const;
++%End
++%If (PyQt_Timezone)
+     int daylightTimeOffset(const QDateTime &atDateTime) const;
++%End
++%If (PyQt_Timezone)
+     bool hasDaylightTime() const;
++%End
++%If (PyQt_Timezone)
+     bool isDaylightTime(const QDateTime &atDateTime) const;
++%End
++%If (PyQt_Timezone)
+     QTimeZone::OffsetData offsetData(const QDateTime &forDateTime) const;
++%End
++%If (PyQt_Timezone)
+     bool hasTransitions() const;
++%End
++%If (PyQt_Timezone)
+     QTimeZone::OffsetData nextTransition(const QDateTime &afterDateTime) const;
++%End
++%If (PyQt_Timezone)
+     QTimeZone::OffsetData previousTransition(const QDateTime &beforeDateTime) const;
++%End
++%If (PyQt_Timezone)
+     QTimeZone::OffsetDataList transitions(const QDateTime &fromDateTime, const QDateTime &toDateTime) const;
++%End
++%If (PyQt_Timezone)
+     static QByteArray systemTimeZoneId();
++%End
+     static bool isTimeZoneIdAvailable(const QByteArray &ianaId);
+ %If (Qt_6_2_0 -)
++%If (PyQt_Timezone)
+     static QList<QByteArray> availableTimeZoneIds(QLocale::Territory territory /Constrained/);
+ %End
++%End
+ %If (- Qt_6_2_0)
++%If (PyQt_Timezone)
+     static QList<QByteArray> availableTimeZoneIds(QLocale::Country country /Constrained/);
+ %End
++%End
++%If (PyQt_Timezone)
+     static QList<QByteArray> availableTimeZoneIds(int offsetSeconds);
++%End
++%If (PyQt_Timezone)
+     static QList<QByteArray> availableTimeZoneIds();
++%End
++%If (PyQt_Timezone)
+     static QByteArray ianaIdToWindowsId(const QByteArray &ianaId);
++%End
++%If (PyQt_Timezone)
+     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId);
++%End
+ %If (Qt_6_2_0 -)
++%If (PyQt_Timezone)
+     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId, QLocale::Territory territory);
+ %End
++%End
+ %If (- Qt_6_2_0)
++%If (PyQt_Timezone)
+     static QByteArray windowsIdToDefaultIanaId(const QByteArray &windowsId, QLocale::Country country);
+ %End
++%End
++%If (PyQt_Timezone)
+     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId);
++%End
+ %If (Qt_6_2_0 -)
++%If (PyQt_Timezone)
+     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId, QLocale::Territory territory);
+ %End
++%End
+ %If (- Qt_6_2_0)
++%If (PyQt_Timezone)
+     static QList<QByteArray> windowsIdToIanaIds(const QByteArray &windowsId, QLocale::Country country);
+ %End
++%End
+     static QTimeZone systemTimeZone();
+     static QTimeZone utc();
+ %If (Qt_6_5_0 -)
+@@ -149,8 +219,10 @@
+     static bool isUtcOrFixedOffset(Qt::TimeSpec spec);
+ %End
+ %If (Qt_6_5_0 -)
++%If (PyQt_Timezone)
+     QTimeZone asBackendZone() const;
+ %End
++%End
+ %If (Qt_6_6_0 -)
+     static const int MinUtcOffsetSecs;
+ %End
+@@ -158,8 +230,10 @@
+     static const int MaxUtcOffsetSecs;
+ %End
+ %If (Qt_6_8_0 -)
++%If (PyQt_Timezone)
+     bool hasAlternativeName(QByteArrayView alias) const;
+ %End
++%End
+ };
+ 
+ QDataStream &operator<<(QDataStream &ds, const QTimeZone &tz) /ReleaseGIL/;
+--- a/sip/QtCore/qdatetime.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qdatetime.sip	2026-03-07 19:53:59
+@@ -138,10 +138,14 @@
+     void getDate(int *year, int *month, int *day) const;
+     // The arguments are marked as deprecated in Qt v6.9.
+     QDateTime startOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
++%If (PyQt_Timezone)
+     QDateTime startOfDay(const QTimeZone &zone) const;
++%End
+     // The arguments are marked as deprecated in Qt v6.9.
+     QDateTime endOfDay(Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0) const;
++%If (PyQt_Timezone)
+     QDateTime endOfDay(const QTimeZone &zone) const;
++%End
+     bool setDate(int year, int month, int day, QCalendar cal);
+     qint64 daysTo(QDate d) const;
+ };
+@@ -342,11 +346,15 @@
+     // The optional arguments are marked as deprecated in Qt v6.9.
+     QDateTime(QDate date, QTime time, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
+ %If (Qt_6_7_0 -)
++%If (PyQt_Timezone)
+     QDateTime(QDate date, QTime time, const QTimeZone &timeZone, QDateTime::TransitionResolution resolve = QDateTime::TransitionResolution::LegacyBehavior);
++%End
+ %End
+ %If (- Qt_6_7_0)
++%If (PyQt_Timezone)
+     QDateTime(QDate date, QTime time, const QTimeZone &timeZone);
+ %End
++%End
+     ~QDateTime();
+     SIP_PYOBJECT __repr__() const /TypeHint="str"/;
+ %MethodCode
+@@ -436,8 +444,10 @@
+     qint64 secsTo(const QDateTime &) const;
+     static QDateTime currentDateTime();
+ %If (Qt_6_5_0 -)
++%If (PyQt_Timezone)
+     static QDateTime currentDateTime(const QTimeZone &zone);
+ %End
++%End
+     static QDateTime fromString(const QString &string, Qt::DateFormat format = Qt::TextDate);
+     // Qt v6.7 replaced this with two overloads but we need to retain the optional keyword argument.
+     static QDateTime fromString(const QString &string, const QString &format, QCalendar cal = QCalendar());
+@@ -452,26 +462,38 @@
+     static qint64 currentMSecsSinceEpoch();
+     void swap(QDateTime &other /Constrained/);
+     int offsetFromUtc() const;
++%If (PyQt_Timezone)
+     QTimeZone timeZone() const;
++%End
+     QString timeZoneAbbreviation() const;
+     bool isDaylightTime() const;
+     void setOffsetFromUtc(int offsetSeconds);
+ %If (Qt_6_7_0 -)
++%If (PyQt_Timezone)
+     void setTimeZone(const QTimeZone &toZone, QDateTime::TransitionResolution resolve = QDateTime::TransitionResolution::LegacyBehavior);
+ %End
++%End
+ %If (- Qt_6_7_0)
++%If (PyQt_Timezone)
+     void setTimeZone(const QTimeZone &toZone);
+ %End
++%End
+     QDateTime toOffsetFromUtc(int offsetSeconds) const;
++%If (PyQt_Timezone)
+     QDateTime toTimeZone(const QTimeZone &toZone) const;
++%End
+     // The optional arguments are marked as deprecated in Qt v6.9.
+     static QDateTime fromMSecsSinceEpoch(qint64 msecs, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
++%If (PyQt_Timezone)
+     static QDateTime fromMSecsSinceEpoch(qint64 msecs, const QTimeZone &timeZone);
++%End
+     qint64 toSecsSinceEpoch() const;
+     void setSecsSinceEpoch(qint64 secs);
+     // The optional arguments are marked as deprecated in Qt v6.9.
+     static QDateTime fromSecsSinceEpoch(qint64 secs, Qt::TimeSpec spec = Qt::LocalTime, int offsetSeconds = 0);
++%If (PyQt_Timezone)
+     static QDateTime fromSecsSinceEpoch(qint64 secs, const QTimeZone &timeZone);
++%End
+     static qint64 currentSecsSinceEpoch();
+ 
+     enum class YearRange : qint32
+@@ -493,8 +515,10 @@
+     void setTime(QTime time);
+ %End
+ %If (Qt_6_5_0 -)
++%If (PyQt_Timezone)
+     QTimeZone timeRepresentation() const;
+ %End
++%End
+ };
+ 
+ QDataStream &operator<<(QDataStream &, QDate) /ReleaseGIL/;
+--- a/sip/QtCore/qfileinfo.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qfileinfo.sip	2026-03-07 19:53:59
+@@ -82,12 +82,16 @@
+     qint64 size() const;
+     QDateTime lastModified() const;
+ %If (Qt_6_6_0 -)
++%If (PyQt_Timezone)
+     QDateTime lastModified(const QTimeZone &tz) const;
+ %End
++%End
+     QDateTime lastRead() const;
+ %If (Qt_6_6_0 -)
++%If (PyQt_Timezone)
+     QDateTime lastRead(const QTimeZone &tz) const;
+ %End
++%End
+     bool caching() const;
+     void setCaching(bool on);
+     QString symLinkTarget() const;
+@@ -98,16 +102,22 @@
+     static bool exists(const QString &file);
+     QDateTime birthTime() const;
+ %If (Qt_6_6_0 -)
++%If (PyQt_Timezone)
+     QDateTime birthTime(const QTimeZone &tz) const;
+ %End
++%End
+     QDateTime metadataChangeTime() const;
+ %If (Qt_6_6_0 -)
++%If (PyQt_Timezone)
+     QDateTime metadataChangeTime(const QTimeZone &tz) const;
+ %End
++%End
+     QDateTime fileTime(QFileDevice::FileTime time) const;
+ %If (Qt_6_6_0 -)
++%If (PyQt_Timezone)
+     QDateTime fileTime(QFileDevice::FileTime time, const QTimeZone &tz) const;
+ %End
++%End
+     bool isSymbolicLink() const;
+     bool isShortcut() const;
+     bool isJunction() const;
+--- a/sip/QtCore/qprocess.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qprocess.sip	2026-03-07 19:13:32
+@@ -305,9 +305,11 @@
+ };
+ 
+ %End
++%If (PyQt_Process)
+ %If (Qt_6_8_0 -)
+ bool operator!=(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs);
+ %End
+ %If (Qt_6_8_0 -)
+ bool operator==(const QProcessEnvironment &lhs, const QProcessEnvironment &rhs);
+ %End
++%End
+--- a/sip/QtCore/qobject.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qobject.sip	2026-03-07 19:53:59
+@@ -274,11 +274,29 @@
+         {0, 0, 45, 14},
+     #endif
+         {sipName_QSettings, &sipType_QSettings, -1, 15},
++#if !defined(QT_NO_SYSTEMSEMAPHORE)
++#if !defined(QT_NO_SYSTEMSEMAPHORE)
+         {sipName_QSharedMemory, &sipType_QSharedMemory, -1, 16},
++#else
++        {0, 0, -1, 16},
++#endif
++#else
++        {0, 0, -1, 16},
++#endif
+         {sipName_QSignalMapper, &sipType_QSignalMapper, -1, 17},
+         {sipName_QSocketNotifier, &sipType_QSocketNotifier, -1, 18},
++#if QT_CONFIG(thread)
++#if QT_CONFIG(thread)
+         {sipName_QThread, &sipType_QThread, -1, 19},
+         {sipName_QThreadPool, &sipType_QThreadPool, -1, 20},
++#else
++        {0, 0, -1, 19},
++        {0, 0, -1, 20},
++#endif
++#else
++        {0, 0, -1, 19},
++        {0, 0, -1, 20},
++#endif
+         {sipName_QTimeLine, &sipType_QTimeLine, -1, 21},
+         {sipName_QTimer, &sipType_QTimer, -1, 22},
+         {sipName_QTranslator, &sipType_QTranslator, -1, 23},
+@@ -453,8 +471,10 @@
+     bool isWindowType() const;
+     bool signalsBlocked() const;
+     bool blockSignals(bool b);
++%If (PyQt_Thread)
+     QThread *thread() const;
+     void moveToThread(QThread *thread);
++%End
+     int startTimer(int interval, Qt::TimerType timerType = Qt::CoarseTimer);
+     void killTimer(int id);
+     const QObjectList &children() const;
+--- a/sip/QtCore/qabstracteventdispatcher.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qabstracteventdispatcher.sip	2026-03-07 19:53:59
+@@ -45,7 +45,12 @@
+ 
+     explicit QAbstractEventDispatcher(QObject *parent /TransferThis/ = 0);
+     virtual ~QAbstractEventDispatcher();
++%If (PyQt_Thread)
+     static QAbstractEventDispatcher *instance(QThread *thread = 0);
++%End
++%If (!PyQt_Thread)
++    static QAbstractEventDispatcher *instance();
++%End
+     virtual bool processEvents(QEventLoop::ProcessEventsFlags flags) = 0 /ReleaseGIL/;
+     int registerTimer(qint64 interval, Qt::TimerType timerType, QObject *object);
+     virtual void registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *object) = 0;
+--- a/sip/QtCore/qeventloop.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qeventloop.sip	2026-03-07 19:53:59
+@@ -65,7 +65,9 @@
+ public:
+     QEventLoopLocker() /ReleaseGIL/;
+     explicit QEventLoopLocker(QEventLoop *loop) /ReleaseGIL/;
++%If (PyQt_Thread)
+     explicit QEventLoopLocker(QThread *thread) /ReleaseGIL/;
++%End
+     ~QEventLoopLocker();
+ %If (Qt_6_7_0 -)
+     void swap(QEventLoopLocker &other);
+--- a/sip/QtCore/qcoreapplication.sip	2026-01-08 07:50:49
++++ b/sip/QtCore/qcoreapplication.sip	2026-03-07 19:53:59
+@@ -317,7 +317,11 @@
+ {
+     QCoreApplication *app = QCoreApplication::instance();
+ 
++#if QT_CONFIG(thread)
+     if (app && app->thread() == QThread::currentThread())
++#else
++    if (app)
++#endif
+     {
+         QEventLoop loop;
+ #if defined(Q_OS_WIN)
+--- a/qpy/QtCore/qpycore_public_api.cpp	2026-01-08 07:50:47
++++ b/qpy/QtCore/qpycore_public_api.cpp	2026-03-07 19:53:59
+@@ -32,7 +32,9 @@
+ #include "qpycore_types.h"
+ 
+ #include <QCoreApplication>
++#if QT_CONFIG(thread)
+ #include <QThread>
++#endif
+ 
+ 
+ // The visitor called for each wrapper to clean up if it is a QObject.
+@@ -53,6 +55,7 @@
+     if (!PyObject_TypeCheck((PyObject *)sw, sipTypeAsPyTypeObject(sipType_QObject)))
+         return;
+ 
++#if QT_CONFIG(thread)
+     // Ignore running threads.
+     if (PyObject_TypeCheck((PyObject *)sw, sipTypeAsPyTypeObject(sipType_QThread)))
+     {
+@@ -61,6 +64,7 @@
+         if (thr->isRunning())
+             return;
+     }
++#endif
+ 
+     sipTransferTo((PyObject *)sw, SIP_NULLPTR);
+ 
+--- a/qpy/QtCore/qpycore_pyqtmutexlocker.cpp	2026-01-08 07:50:47
++++ b/qpy/QtCore/qpycore_pyqtmutexlocker.cpp	2026-03-07 19:13:32
+@@ -1,3 +1,6 @@
++#include <QtCore/qtconfigmacros.h>
++#include <QtCore/qtcore-config.h>
++#if QT_CONFIG(thread)
+ // This is the implementation of the PyQtMutexLocker class.
+ //
+ // Copyright (c) 2026 Riverbank Computing Limited <info@riverbankcomputing.com>
+@@ -84,3 +87,5 @@
+     else
+         _r_locker->relock();
+ }
++
++#endif
+--- a/qpy/QtCore/qpycore_pyqtmutexlocker.h	2026-01-08 07:50:47
++++ b/qpy/QtCore/qpycore_pyqtmutexlocker.h	2026-03-07 19:13:32
+@@ -1,3 +1,6 @@
++#include <QtCore/qtconfigmacros.h>
++#include <QtCore/qtcore-config.h>
++#if QT_CONFIG(thread)
+ // This is the declaration of the PyQtMutexLocker class.
+ //
+ // Copyright (c) 2026 Riverbank Computing Limited <info@riverbankcomputing.com>
+@@ -43,3 +46,5 @@
+ 
+     PyQtMutexLocker(const PyQtMutexLocker &);
+ };
++
++#endif
