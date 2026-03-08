@@ -111,7 +111,7 @@ Threading classes (QThread, QMutex, etc.) are excluded — WASM is single-thread
 |-----------|---------|
 | Qt6 | 6.10.2 |
 | PyQt6 | 6.10.2 |
-| Pyodide | main (0.30.0-dev) |
+| Pyodide | 0.29.3 |
 | Python | 3.13.2 |
 | Emscripten | 4.0.9 |
 

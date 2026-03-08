@@ -27,7 +27,7 @@ QT_BRANCH="v${QT_VERSION}"
 PYQT6_VERSION="6.10.2"
 SIP_VERSION="6.15.1"
 PYQT6_SIP_VERSION="13.11.0"
-PYODIDE_VERSION="main"  # branch or tag to clone
+PYODIDE_VERSION="0.29.3"  # branch or tag to clone
 
 # Derived paths
 QT_SRC="$SOURCES_DIR/qt6"
@@ -520,9 +520,10 @@ do_package() {
     mkdir -p "$staging"
 
     # Copy Pyodide dist files
-    cp "$dist_dir/pyodide.mjs" "$staging/"
+    cp "$dist_dir/pyodide.mjs" "$staging/" 2>/dev/null || true
     cp "$dist_dir/pyodide.asm.wasm" "$staging/"
-    cp "$dist_dir/pyodide.asm.mjs" "$staging/"
+    cp "$dist_dir/pyodide.asm.js" "$staging/" 2>/dev/null || true
+    cp "$dist_dir/pyodide.asm.mjs" "$staging/" 2>/dev/null || true
     cp "$dist_dir/pyodide-lock.json" "$staging/"
     cp "$dist_dir/python_stdlib.zip" "$staging/"
     cp "$dist_dir/pyodide.js" "$staging/" 2>/dev/null || true
