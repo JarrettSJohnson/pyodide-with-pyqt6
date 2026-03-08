@@ -26,7 +26,8 @@ Qt renders to a `<div>` container element via Emscripten's HTML5 canvas backend.
 ## Quick start
 
 ```bash
-pixi run build       # full build (~45 min first time)
+pixi run build       # full build (~40 min first time)
+pixi run test        # smoke test (verify PyQt6 imports)
 pixi run serve       # serve on localhost:8080
 # open http://localhost:8080/test.html
 ```
@@ -34,9 +35,11 @@ pixi run serve       # serve on localhost:8080
 ### Individual build phases
 
 ```bash
-pixi run build-qt      # Phase 1: Qt6 for WASM (~30 min)
+pixi run build-qt      # Phase 1: Qt6 for WASM (~25 min)
 pixi run build-pyqt    # Phase 2: SIP + PyQt6 modules (~5 min)
-pixi run build-pyodide # Phase 3: Link into Pyodide (~2 min)
+pixi run build-pyodide # Phase 3: Link into Pyodide (~5 min)
+pixi run test          # Smoke test (Node.js)
+pixi run package       # Create distributable zip
 pixi run clean         # Remove all build artifacts
 ```
 
@@ -117,7 +120,12 @@ Threading classes (QThread, QMutex, etc.) are excluded — WASM is single-thread
 ```
 ├── build.sh                      # Build pipeline (qt → pyqt → pyodide)
 ├── pixi.toml                     # Host tool dependencies
-├── test.html                     # Browser test page
+├── test.html                     # Browser test page (signals/slots demo)
+├── .github/workflows/build.yml   # CI: build + test + release
+├── scripts/
+│   ├── smoke-test.mjs            # Node.js smoke test
+│   ├── generate-patches.sh       # Generate .patch files from clean sources
+│   └── apply-patches.sh          # Apply .patch files
 ├── patches/
 │   ├── apply-wasm-patches.py     # WASM patches for PyQt6 + Pyodide
 │   ├── qt_plugin_import.cpp      # Qt static plugin registration
@@ -138,6 +146,10 @@ Threading classes (QThread, QMutex, etc.) are excluded — WASM is single-thread
 - **Single window** — Qt WASM renders to container elements; multi-window requires multiple containers
 - **Large binary** — the WASM output is ~33 MB (could be reduced with `-Oz` and dead code stripping)
 - **GPL v3** — PyQt6 is GPL-licensed
+
+## CI/CD
+
+Builds run on every push and PR via GitHub Actions. Tagged releases (`v*`) automatically publish a distributable zip.
 
 ## Acknowledgments
 
