@@ -23,6 +23,9 @@ jobs:
       - name: Build
         run: pixi run build
 
+      - name: Smoke test
+        run: pixi run test
+
       - name: Package
         run: pixi run package
 
