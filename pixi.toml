@@ -1,6 +1,6 @@
 [project]
 name = "pyodide-qt"
-version = "0.1.0"
+version = "0.29.3.0"
 description = "PyQt6 compiled for Pyodide via Emscripten"
 channels = ["conda-forge"]
 platforms = ["osx-arm64", "linux-64"]
