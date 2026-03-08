@@ -28,4 +28,5 @@ build-qt = { cmd = "bash build.sh qt", description = "Build Qt6 for WASM only" }
 build-pyqt = { cmd = "bash build.sh pyqt", description = "Build SIP + PyQt6 only" }
 build-pyodide = { cmd = "bash build.sh pyodide", description = "Link into Pyodide only" }
 clean = { cmd = "bash build.sh clean", description = "Remove build artifacts" }
+package = { cmd = "bash build.sh package", description = "Package dist into a zip for release" }
 serve = { cmd = "python -m http.server -d build/output 8080", description = "Serve the built output" }

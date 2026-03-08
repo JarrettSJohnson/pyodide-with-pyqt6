@@ -454,6 +454,52 @@ LDFLAGS
     log "Build complete! Output in: $PYODIDE_REPO/dist/"
 }
 
+# ---- Package ----------------------------------------------------------------
+
+do_package() {
+    local dist_dir="$PYODIDE_REPO/dist"
+    if [ ! -d "$dist_dir" ]; then
+        err "No dist directory found at $dist_dir — run build first"
+    fi
+
+    local version
+    version="$(grep '^version' "$ROOT_DIR/pixi.toml" | head -1 | sed 's/.*"\(.*\)".*/\1/')"
+    local out_dir="$ROOT_DIR/dist"
+    local zip_name="pyodide-qt-${version}.zip"
+
+    mkdir -p "$out_dir"
+
+    log "Packaging $zip_name..."
+
+    # Create a staging directory with clean structure
+    local staging="$BUILD_DIR/staging/pyodide-qt"
+    rm -rf "$BUILD_DIR/staging"
+    mkdir -p "$staging"
+
+    # Copy Pyodide dist files
+    cp "$dist_dir/pyodide.mjs" "$staging/"
+    cp "$dist_dir/pyodide.asm.wasm" "$staging/"
+    cp "$dist_dir/pyodide.asm.mjs" "$staging/"
+    cp "$dist_dir/pyodide-lock.json" "$staging/"
+    cp "$dist_dir/python_stdlib.zip" "$staging/"
+    cp "$dist_dir/pyodide.js" "$staging/" 2>/dev/null || true
+    cp "$dist_dir/package.json" "$staging/" 2>/dev/null || true
+
+    # Copy test page with paths adjusted for flat layout
+    sed 's|./build/sources/pyodide/dist/|./|g' "$ROOT_DIR/test.html" > "$staging/test.html"
+
+    # Create the zip
+    pushd "$BUILD_DIR/staging" >/dev/null
+    zip -r "$out_dir/$zip_name" pyodide-qt/
+    popd >/dev/null
+
+    rm -rf "$BUILD_DIR/staging"
+
+    local size
+    size="$(du -h "$out_dir/$zip_name" | cut -f1)"
+    log "Package created: dist/$zip_name ($size)"
+}
+
 # ---- Clean ------------------------------------------------------------------
 
 do_clean() {
@@ -465,10 +511,11 @@ do_clean() {
 # ---- Main -------------------------------------------------------------------
 
 case "${1:-all}" in
-    qt)      build_qt ;;
-    pyqt)    build_pyqt ;;
-    pyodide) build_pyodide ;;
-    clean)   do_clean ;;
+    qt)       build_qt ;;
+    pyqt)     build_pyqt ;;
+    pyodide)  build_pyodide ;;
+    package)  do_package ;;
+    clean)    do_clean ;;
     all)
         download_sources
         build_qt
@@ -477,7 +524,7 @@ case "${1:-all}" in
         log "Build complete!"
         ;;
     *)
-        echo "Usage: $0 {all|qt|pyqt|pyodide|clean}"
+        echo "Usage: $0 {all|qt|pyqt|pyodide|package|clean}"
         exit 1
         ;;
 esac
