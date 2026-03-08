@@ -76,7 +76,7 @@ setup_pyodide_emsdk() {
         pushd "$PYODIDE_REPO"
         export PYODIDE_ROOT="$(pwd)"
         unset EMSDK EM_CONFIG EMSDK_NODE EMSDK_PYTHON PYTHON 2>/dev/null || true
-        make emsdk
+        make emsdk/emsdk/.complete
         popd
     fi
 
@@ -173,6 +173,22 @@ download_sources() {
 # ---- Phase 2: Build SIP + PyQt6 for WASM -----------------------------------
 
 PYQT6_SIP_SRC="$SOURCES_DIR/pyqt6_sip-${PYQT6_SIP_VERSION}"
+
+# Build Pyodide's cross-compiled CPython (needed for Python.h headers)
+build_cpython() {
+    local pyversion pymajmin pyodide_lib
+    pyversion=$(grep 'PYVERSION' "$PYODIDE_REPO/Makefile.envs" | head -1 | sed 's/.*?= *//')
+    pymajmin="${pyversion%.*}"
+    pyodide_lib="$PYODIDE_REPO/cpython/installs/python-${pyversion}/lib/python${pymajmin}"
+
+    if [ ! -d "$pyodide_lib" ]; then
+        log "Building Pyodide's CPython (needed for Python headers)..."
+        pushd "$PYODIDE_REPO"
+        export PYODIDE_ROOT="$(pwd)"
+        make "$pyodide_lib"
+        popd
+    fi
+}
 
 # Get Pyodide's cross-compilation paths
 get_pyodide_paths() {
@@ -318,6 +334,7 @@ build_pyqt() {
     log "Phase 2: Building SIP + PyQt6 for WebAssembly"
     setup_pyodide_emsdk
     download_sources
+    build_cpython
     build_pyqt_sip
     build_pyqt_modules
 }
@@ -371,6 +388,7 @@ $qt_lib/libQt6BundledFreetype.a
 $qt_lib/libQt6BundledLibpng.a
 $qt_lib/libQt6BundledLibjpeg.a
 $qt_lib/libQt6BundledPcre2.a
+$qt_lib/libQt6BundledZLIB.a
 
 # Qt6 plugins
 $qt_plugins/platforms/libqwasm.a
@@ -449,7 +467,32 @@ LDFLAGS
 
     # Build everything else (link step picks up our patched MAIN_MODULE_LDFLAGS)
     make all-but-packages
+
+    # Generate a minimal pyodide-lock.json (no packages — PyQt6 is built-in)
+    if [ ! -f dist/pyodide-lock.json ]; then
+        local em_ver
+        em_ver=$(emcc --version | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+')
+        local em_platform="emscripten_${em_ver//./_}"
+        python3 -c "
+import json, sys
+lock = {
+    'info': {
+        'arch': 'wasm32',
+        'platform': '${em_platform}',
+        'version': '0.30.0-dev',
+        'python': '${pyversion}',
+        'abi_version': '2025_0',
+    },
+    'packages': {}
+}
+json.dump(lock, sys.stdout, indent=2)
+print()
+" > dist/pyodide-lock.json
+    fi
     popd
+
+    # Copy our test page into dist (with paths adjusted for flat layout)
+    sed 's|./build/sources/pyodide/dist/|./|g' "$ROOT_DIR/test.html" > "$PYODIDE_REPO/dist/test.html"
 
     log "Build complete! Output in: $PYODIDE_REPO/dist/"
 }

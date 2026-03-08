@@ -53,20 +53,29 @@ window.setWindowTitle("Hello from PyQt6 on Pyodide!")
 window.resize(400, 200)
 
 layout = QVBoxLayout()
-label = QLabel("Hello World from PyQt6!")
+label = QLabel("Clicked 0 times")
 label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 label.setStyleSheet("font-size: 24px; color: #2196F3; padding: 20px;")
 layout.addWidget(label)
 
+counter = 0
+
+def on_click():
+    global counter
+    counter += 1
+    label.setText(f"Clicked {counter} times")
+    print(f"Button clicked! Count: {counter}")
+
 button = QPushButton("Click me!")
 button.setStyleSheet("font-size: 18px; padding: 10px;")
+button.clicked.connect(on_click)
 layout.addWidget(button)
 
 window.setLayout(layout)
 window.show()
 
 print("Widgets created and shown!")
-print(f"Window size: {window.width()}x{window.height()}")
+print("Try clicking the button - signals/slots demo")
       `);
 
       print("Done! Check the container above.");
